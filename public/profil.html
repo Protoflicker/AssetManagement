@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SESDIAN - Sedang Dipinjam</title>
+    <title>SESDIAN - Profil Saya</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="assets/app.css?v=17" />
     <link rel="stylesheet" href="assets/preloader.css?v=17" />
   </head>
-  <body data-page="dipinjam" data-auth="required">
+  <body data-page="profil" data-auth="required">
     <div id="root">
       <div style="display: flex; min-height: 100vh; background: rgb(240, 244, 255)">
         <aside
@@ -49,36 +49,10 @@
               box-shadow: rgba(0, 0, 0, 0.04) 0 1px 0;
             "
           ></div>
-          <div style="padding: 1.75rem">
-            <div class="animate-fade-up" style="margin-bottom: 1.25rem">
-              <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 4px">
-                Sedang Dipinjam
-              </h1>
-              <p style="color: var(--text-muted); font-size: 0.875rem">
-                Barang yang masih di tangan peminjam (belum dikembalikan).
-              </p>
+          <div style="padding: 1.75rem; max-width: 920px">
+            <div data-profile-root>
+              <div class="sesd-page-loader"><span></span><span></span><span></span></div>
             </div>
-
-            <div
-              class="animate-fade-up delay-1"
-              style="
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 0.75rem;
-                margin-bottom: 1.25rem;
-              "
-            >
-              <div style="background: #fff; border-radius: 12px; padding: 1rem 1.1rem; border-left: 4px solid rgb(139, 92, 246); box-shadow: var(--shadow)">
-                <div data-count="borrowed" style="font-size: 1.6rem; font-weight: 800; color: rgb(139, 92, 246)">0</div>
-                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500">Dipinjam</div>
-              </div>
-              <div style="background: #fff; border-radius: 12px; padding: 1rem 1.1rem; border-left: 4px solid rgb(245, 158, 11); box-shadow: var(--shadow)">
-                <div data-count="return_pending" style="font-size: 1.6rem; font-weight: 800; color: rgb(245, 158, 11)">0</div>
-                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500">Menunggu Verifikasi Kembali</div>
-              </div>
-            </div>
-
-            <div class="animate-fade-up delay-2" data-dipinjam></div>
           </div>
         </main>
       </div>
@@ -88,6 +62,6 @@
     <script defer src="assets/icons.js?v=17"></script>
     <script defer src="assets/preloader.js?v=17"></script>
     <script defer src="assets/app.js?v=17"></script>
-      <script defer src="assets/theme.js?v=17"></script>
+    <script defer src="assets/theme.js?v=17"></script>
   </body>
 </html>
