@@ -147,6 +147,7 @@
     return {
       id: b.id, asset_name: b.asset_name || '-', asset_code: b.asset_code || '',
       borrower: b.borrower_name || '-', borrower_avatar: b.borrower_avatar || '', qty: b.qty, status: b.status,
+      notes: b.notes || '',
       due_date: b.due_date ? String(b.due_date).slice(0, 10) : '',
       request_date: d ? (d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear()) : '',
       // raw timestamps for the notification bell (event time per status)
@@ -185,7 +186,7 @@
       var a = DEMO.assets.filter(function (x) { return x.id == o.assetId; })[0];
       if (!a || a.stock_available < q) return Promise.reject(new Error('Stok tidak mencukupi'));
       a.stock_available -= q; a.stock_borrowed += q;
-      var b = { id: ++DEMO.seq, asset_id: a.id, borrower_name: 'Pengguna Demo', qty: q, status: 'pending', due_date: o.dueDate || null, created_at: new Date(2026, 5, 18).toISOString() };
+      var b = { id: ++DEMO.seq, asset_id: a.id, borrower_name: 'Pengguna Demo', qty: q, status: 'pending', due_date: o.dueDate || null, notes: o.notes || null, created_at: new Date(2026, 5, 18).toISOString() };
       DEMO.borrowings.push(b); return P(b);
     }
     return (await req('borrowings', { method: 'POST', body: { assetId: o.assetId, qty: o.qty || 1, dueDate: o.dueDate || null, notes: o.notes || null } })).borrowing;
@@ -240,6 +241,7 @@
           due_date: b.due_date,
           created_at: b.created_at,
           returned_at: b.returned_at || null,
+          notes: b.notes || '',
           asset_name: b.asset_name,
           asset_code: b.asset_code,
           admin_name: b.status === 'approved' || b.status === 'borrowed' || b.status === 'returned' ? 'Admin Demo' : '',

@@ -420,9 +420,6 @@
         // "Semua" segment is default-active in the markup, so the FULL history shows
         // by default; just fill the per-status count badges.
         Object.keys(counts).forEach(function (k) { var e = $('[data-count="' + k + '"]'); if (e) e.textContent = counts[k]; });
-        if ($('[data-asset-template]')) {
-          renderList('[data-asset-template]', await DB.assets(), function (n, r) { var cb = $('[data-asset-checkbox]', n) || $('input[type="checkbox"]', n); if (cb) cb.value = String(r.id); });
-        }
       } else if (p === 'verifikasi') {
         var allb = await DB.borrowings();
         // Role-aware queue: the admin's verification work is verif 1 (pending) and
@@ -443,6 +440,7 @@
             wrap.appendChild(el('span', { style: 'font-weight:600;color:var(--text)' }, r.borrower || '-'));
             bc.appendChild(wrap);
           }
+          var nc = $('[data-bind="notes"]', n); if (nc && !r.notes) nc.textContent = '-';
         });
         var qc = $('[data-count="approved"]'); if (qc) qc.textContent = queue.length;
         var done = allb.filter(function (b) { return b.status === 'verified' || b.status === 'borrowed' || b.status === 'returned'; }).length;
@@ -1151,14 +1149,19 @@
     dateWrap.appendChild(el('label', { style: 'font-size:.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px' }, 'Tanggal Jatuh Tempo Kembali (wajib)'));
     var dateInput = el('input', { type: 'date', value: '', min: todayISO(), style: 'width:100%;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:10px;font-size:.875rem;outline:none;box-sizing:border-box' });
     dateWrap.appendChild(dateInput); m.appendChild(dateWrap);
+    var reasonWrap = el('div', { style: 'margin-top:.85rem' });
+    reasonWrap.appendChild(el('label', { style: 'font-size:.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px' }, 'Alasan Peminjaman (opsional)'));
+    var reasonInput = el('textarea', { placeholder: 'Contoh: dipakai untuk rapat koordinasi tanggal 15', style: 'width:100%;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:10px;font-size:.875rem;outline:none;box-sizing:border-box;height:64px;resize:vertical;font-family:inherit' });
+    reasonWrap.appendChild(reasonInput); m.appendChild(reasonWrap);
     var foot = el('div', { style: 'display:flex;gap:8px;margin-top:1rem' });
     ajukan.addEventListener('click', async function () {
       var ids = Object.keys(selected);
       if (!ids.length) { toast('Pilih unit yang ingin dipinjam', 'error'); return; }
       if (!dateInput.value) { toast('Tanggal jatuh tempo kembali wajib diisi', 'error'); dateInput.focus(); return; }
       ajukan.disabled = true;
+      var reason = reasonInput.value.trim() || null;
       try {
-        for (var i = 0; i < ids.length; i++) await DB.requestBorrowing({ assetId: parseInt(ids[i], 10), qty: 1, dueDate: dateInput.value, notes: null });
+        for (var i = 0; i < ids.length; i++) await DB.requestBorrowing({ assetId: parseInt(ids[i], 10), qty: 1, dueDate: dateInput.value, notes: reason });
         toast('Pengajuan ' + ids.length + ' unit terkirim', 'success');
         ov.remove();
         if (page() === 'ajukanpinjam') setTimeout(function () { location.href = 'daftarpinjam.html'; }, 600); else reloadData();
@@ -1179,6 +1182,7 @@
     info.appendChild(el('div', { style: 'font-weight:700;font-size:0.9rem' }, b.asset_name || '-'));
     var st = STATUS[b.status] ? STATUS[b.status].label : b.status;
     info.appendChild(el('div', { style: 'font-size:0.72rem;color:var(--text-muted)' }, (b.asset_code ? b.asset_code + ' · ' : '') + st + (b.due_date ? ' · jatuh tempo ' + String(b.due_date).slice(0, 10) : '')));
+    if (b.notes) info.appendChild(el('div', { style: 'font-size:0.72rem;color:var(--text-muted);font-style:italic;margin-top:2px' }, 'Alasan: ' + b.notes));
     row.appendChild(info);
     if (staff) {
       var verify = el('button', { class: 'sesd-btn sesd-btn-sm sesd-btn-success' }, b.status === 'return_pending' ? 'Verifikasi Dikembalikan' : 'Tandai Dikembalikan');

@@ -51,7 +51,7 @@ export default async function handler(req, res) {
 
       const rows = seesAll
         ? await sql`select b.id, b.borrower_name, b.qty, b.status, b.due_date, b.created_at,
-               b.approved_at, b.verified_at, b.returned_at,
+               b.approved_at, b.verified_at, b.returned_at, b.notes,
                coalesce(a.name,'-') as asset_name, coalesce(a.code,'') as asset_code,
                coalesce(u.avatar,'') as borrower_avatar,
                count(*) over() as total_count
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
             left join users u on u.id = b.user_id
             order by b.created_at desc limit ${limit} offset ${offset}`
         : await sql`select b.id, b.borrower_name, b.qty, b.status, b.due_date, b.created_at,
-               b.approved_at, b.verified_at, b.returned_at,
+               b.approved_at, b.verified_at, b.returned_at, b.notes,
                coalesce(a.name,'-') as asset_name, coalesce(a.code,'') as asset_code,
                count(*) over() as total_count
             from borrowings b left join assets a on a.id = b.asset_id

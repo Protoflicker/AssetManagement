@@ -85,7 +85,7 @@
       if (ok && tr.firstChild) { tr.firstChild.textContent = String(++n); }
     });
     var emptyRow = $('[data-report-empty]', tbody); if (emptyRow) emptyRow.remove();
-    if (rows.length && n === 0) tbody.appendChild(el('tr', { 'data-report-empty': '', html: '<td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">Tidak ada peminjaman dengan status ini.</td>' }));
+    if (rows.length && n === 0) tbody.appendChild(el('tr', { 'data-report-empty': '', html: '<td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted)">Tidak ada peminjaman dengan status ini.</td>' }));
   }
 
   function pad2(n) { return n < 10 ? '0' + n : '' + n; }
@@ -178,7 +178,7 @@
 
     var tbody = $('[data-report-rows]'); tbody.innerHTML = '';
     updateFilterCounts(d);
-    if (!d.rows.length) { tbody.appendChild(el('tr', { html: '<td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">Tidak ada peminjaman pada periode ini.</td>' })); return; }
+    if (!d.rows.length) { tbody.appendChild(el('tr', { html: '<td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted)">Tidak ada peminjaman pada periode ini.</td>' })); return; }
     var td = 'padding:0.6rem 0.8rem;font-size:0.83rem;border-top:1px solid var(--border)';
     d.rows.forEach(function (r, i) {
       var tr = el('tr', { 'data-status': r.status || '' });
@@ -195,6 +195,7 @@
       tr.appendChild(el('td', { style: td, 'data-label': 'Tgl Pinjam' }, fmtDate(r.created_at)));
       tr.appendChild(el('td', { style: td, 'data-label': 'Tgl Kembali' }, r.due_date ? fmtDate(r.due_date) : '-'));
       tr.appendChild(el('td', { style: td, 'data-label': 'Tgl Pengembalian' }, r.returned_at ? fmtDate(r.returned_at) : '-'));
+      tr.appendChild(el('td', { style: td + ';max-width:220px;color:var(--text-muted)', 'data-label': 'Alasan' }, r.notes || '-'));
       tr.appendChild(el('td', { style: td, 'data-label': 'Admin' }, r.admin_name || '-'));
       tr.appendChild(el('td', { style: td, 'data-label': 'Verifikator' }, r.verifikator_name || '-'));
       tbody.appendChild(tr);
@@ -204,11 +205,11 @@
 
   function exportCsv() {
     if (!lastData || !lastData.rows.length) { toast('Tidak ada data untuk diexport', 'error'); return; }
-    var head = ['No', 'Nama Peminjam', 'Nama Barang', 'Tgl Pinjam', 'Tgl Kembali', 'Tgl Pengembalian', 'Admin', 'Verifikator'];
+    var head = ['No', 'Nama Peminjam', 'Nama Barang', 'Tgl Pinjam', 'Tgl Kembali', 'Tgl Pengembalian', 'Alasan', 'Admin', 'Verifikator'];
     var lines = [head.join(',')];
     lastData.rows.forEach(function (r, i) {
       var row = [i + 1, r.borrower_name || '', r.asset_name || '', fmtDate(r.created_at), r.due_date ? fmtDate(r.due_date) : '',
-        r.returned_at ? fmtDate(r.returned_at) : '', r.admin_name || '', r.verifikator_name || ''];
+        r.returned_at ? fmtDate(r.returned_at) : '', r.notes || '', r.admin_name || '', r.verifikator_name || ''];
       lines.push(row.map(function (c) { var s = String(c == null ? '' : c); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','));
     });
     var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
@@ -235,7 +236,7 @@
     doc.text('Periode ' + fmtDate(lastData.start) + ' s/d ' + fmtDate(lastData.end), doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
 
     // Table headers
-    var head = [['No', 'Nama Peminjam', 'Nama Barang', 'Tgl Pinjam', 'Tgl Kembali', 'Tgl Pengembalian', 'Nama Admin', 'Nama Verifikator']];
+    var head = [['No', 'Nama Peminjam', 'Nama Barang', 'Tgl Pinjam', 'Tgl Kembali', 'Tgl Pengembalian', 'Alasan', 'Nama Admin', 'Nama Verifikator']];
 
     // Table body – respect the active status filter
     var body = [];
@@ -251,6 +252,7 @@
         fmtDate(r.created_at),
         r.due_date ? fmtDate(r.due_date) : '-',
         r.returned_at ? fmtDate(r.returned_at) : '-',
+        r.notes || '-',
         r.admin_name || '-',
         r.verifikator_name || '-'
       ]);
