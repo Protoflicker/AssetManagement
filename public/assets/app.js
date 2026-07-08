@@ -414,7 +414,10 @@
         var bs = allbs;
         var bSub = $('[data-borrow-subtitle]'); if (bSub) bSub.textContent = allbs.length + ' total transaksi';
         ensureAksiHeader();
-        renderList('[data-template]', bs, function (n, r) { n.setAttribute('data-status', r.status); enhanceBorrowingRow(n, r); });
+        renderList('[data-template]', bs, function (n, r) {
+          n.setAttribute('data-status', r.status); enhanceBorrowingRow(n, r);
+          var nc = $('[data-bind="notes"]', n); if (nc && !r.notes) nc.textContent = '-';
+        });
         var counts = { all: allbs.length, pending: 0, approved: 0, rejected: 0, returned: 0 };
         allbs.forEach(function (b) { if (counts[b.status] != null) counts[b.status]++; });
         // "Semua" segment is default-active in the markup, so the FULL history shows
