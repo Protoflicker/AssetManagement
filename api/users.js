@@ -64,7 +64,10 @@ export default async function handler(req, res) {
       // riwayat peminjaman tetap tertaut pada akun ini.
       if (b.action === 'deactivate') {
         if (String(uid) === String(admin.sub)) return send(res, 400, { error: 'Tidak dapat menonaktifkan akun sendiri' });
-        const rows = await sql`update users set name = '', password_hash = '', avatar = null
+        // role ikut direset ke 'user': akun nonaktif bisa diklaim ulang siapa pun
+        // yang tahu NIP-nya, jadi peran admin/verifikator tidak boleh menempel di
+        // akun yang menunggu klaim. Admin dapat menaikkan perannya lagi setelahnya.
+        const rows = await sql`update users set name = '', password_hash = '', avatar = null, role = 'user'
           where id = ${uid}
           returning id, nip, name, coalesce(phone,'') as phone, role, created_at, false as claimed`;
         if (!rows.length) return send(res, 404, { error: 'User tidak ditemukan' });

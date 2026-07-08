@@ -281,7 +281,7 @@
   // nonaktifkan: NIP tetap, nama & password direset agar pemilik NIP mengaktifkan
   // ulang seperti akun baru; baris akun (dan riwayat peminjamannya) tidak dihapus.
   async function deactivateUser(id) {
-    if (demo) { var u = DEMO.users.filter(function (x) { return x.id == id; })[0]; if (u) { u.name = ''; u.claimed = false; } return P(u); }
+    if (demo) { var u = DEMO.users.filter(function (x) { return x.id == id; })[0]; if (u) { u.name = ''; u.claimed = false; u.role = 'user'; } return P(u); }
     return (await req('users', { method: 'PATCH', body: { id: id, action: 'deactivate' } })).user;
   }
   /* ====================== self-service profile ====================== */

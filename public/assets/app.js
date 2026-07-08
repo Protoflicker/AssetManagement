@@ -1552,7 +1552,7 @@
         off.addEventListener('click', function () {
           confirmAction({
             title: 'Nonaktifkan akun ini?',
-            message: 'NIP ' + u.nip + ' tetap tersimpan, tetapi nama dan password direset. Pemilik NIP harus mengaktifkan ulang dengan mengatur nama dan password sendiri, seperti saat NIP baru didaftarkan. Riwayat peminjaman akun ini tetap tersimpan.',
+            message: 'NIP ' + u.nip + ' tetap tersimpan, tetapi nama dan password direset dan peran kembali menjadi User. Pemilik NIP harus mengaktifkan ulang dengan mengatur nama dan password sendiri, seperti saat NIP baru didaftarkan. Riwayat peminjaman akun ini tetap tersimpan.',
             variant: 'warning', confirmLabel: 'Ya, nonaktifkan', cancelLabel: 'Batal'
           }, async function () { await DB.deactivateUser(u.id); toast('Akun dinonaktifkan, pemilik NIP diminta mengaktifkan ulang', 'success'); renderUsers(); });
         });
