@@ -396,7 +396,7 @@
         var sub = $('[data-asset-subtitle]'); if (sub) sub.textContent = groups.length + ' jenis · ' + assets.length + ' unit · ' + aStats.total_stock + ' total stok';
       } else if (p === 'kategoriaset') {
         var cats = await DB.categories();
-        var catSub = $('[data-cat-subtitle]'); if (catSub) catSub.textContent = cats.length + ' kategori';
+        var catSub = $('[data-cat-subtitle]'); if (catSub) catSub.textContent = cats.length + ' jenis BMN';
         renderList('[data-template]', cats, function (n, r) { n.setAttribute('data-id', r.id); if (IS_ADMIN) enhanceSimpleCard(n, r, 'category'); });
       } else if (p === 'ruangan') {
         var roomsSub = $('[data-room-subtitle]');
@@ -880,22 +880,24 @@
     var codeInput = el('input', { type: 'text', placeholder: 'Kode unik untuk barang ini' }); if (rec && rec.code) codeInput.value = rec.code;
     m.appendChild(field('Kode', codeInput));
     var catDD = buildDropdown({                                           // #8 — styled category dropdown + add/delete
-      value: rec && rec.category_id, placeholder: 'Pilih kategori',
+      value: rec && rec.category_id, placeholder: 'Pilih jenis BMN',
       options: cats.map(function (c) { return { value: c.id, label: c.name }; }),
-      addPlaceholder: 'Nama kategori baru',
+      addPlaceholder: 'Nama jenis BMN baru',
       onAdd: function (name, done) {
-        if (cats.some(function (c) { return (c.name || '').trim().toLowerCase() === name.toLowerCase(); })) { toast('Kategori sudah ada', 'error'); done(); return; }
-        DB.createCategory({ name: name }).then(function (res) { var id = res && (res.id != null ? res.id : (res.category && res.category.id)); cats.push({ id: id, name: name }); toast('Kategori ditambahkan', 'success'); reloadData(); done({ value: id, label: name }); }).catch(function (e) { toast((e && e.message) || 'Gagal', 'error'); done(); });
+        if (cats.some(function (c) { return (c.name || '').trim().toLowerCase() === name.toLowerCase(); })) { toast('Jenis BMN sudah ada', 'error'); done(); return; }
+        DB.createCategory({ name: name }).then(function (res) { var id = res && (res.id != null ? res.id : (res.category && res.category.id)); cats.push({ id: id, name: name }); toast('Jenis BMN ditambahkan', 'success'); reloadData(); done({ value: id, label: name }); }).catch(function (e) { toast((e && e.message) || 'Gagal', 'error'); done(); });
       },
       onDelete: function (o, done) {
-        confirmAction({ title: 'Hapus Kategori', message: 'Hapus kategori "' + o.label + '"? Aset yang memakainya menjadi tanpa kategori.', variant: 'danger', confirmLabel: 'Ya, hapus' }, async function () {
-          await DB.deleteCategory(o.value); cats = cats.filter(function (c) { return c.id !== o.value; }); toast('Kategori dihapus', 'success'); reloadData(); done();
+        confirmAction({ title: 'Hapus Jenis BMN', message: 'Hapus jenis BMN "' + o.label + '"? Aset yang memakainya menjadi tanpa jenis BMN.', variant: 'danger', confirmLabel: 'Ya, hapus' }, async function () {
+          await DB.deleteCategory(o.value); cats = cats.filter(function (c) { return c.id !== o.value; }); toast('Jenis BMN dihapus', 'success'); reloadData(); done();
         });
       },
     });
-    m.appendChild(field('Kategori', catDD.wrap));
+    m.appendChild(field('Jenis BMN', catDD.wrap));
     var brandInput = el('input', { type: 'text' }); if (rec && rec.brand) brandInput.value = rec.brand;
     m.appendChild(field('Merek', brandInput));
+    var acqInput = el('input', { type: 'date', max: todayISO() }); if (rec && rec.acquisition_date) acqInput.value = String(rec.acquisition_date).slice(0, 10);
+    m.appendChild(field('Tanggal Perolehan', acqInput));
     var roomDD = buildDropdown({ value: rec && rec.room_id, placeholder: 'Tanpa ruangan', options: [{ value: '', label: 'Tanpa ruangan' }].concat(rms.map(function (r) { return { value: r.id, label: r.name }; })) });
     m.appendChild(field('Ruangan (opsional)', roomDD.wrap));
     var jenisDD = buildDropdown({ value: (rec && rec.type) || 'BMN', options: [{ value: 'BMN', label: 'BMN' }, { value: 'Non-BMN', label: 'Non-BMN' }] });
@@ -915,6 +917,7 @@
     save.addEventListener('click', async function () {
       var name = (nameW.get() || '').trim(), code = (codeInput.value || '').trim();
       if (!name || !code) { toast('Nama dan kode wajib diisi', 'error'); return; }
+      if (!acqInput.value) { toast('Tanggal perolehan wajib diisi', 'error'); acqInput.focus(); return; }
       save.disabled = true; save.textContent = 'Menyimpan...';
       await assetsReady;   // pastikan daftar aset siap untuk cek kode unik
       var codeK = code.toLowerCase();
@@ -926,6 +929,7 @@
           room_id: roomDD.get() ? parseInt(roomDD.get(), 10) : null,
           brand: (brandInput.value || '').trim() || null,
           type: jenisDD.get() || 'BMN', condition: kondisiDD.get() || 'Baik',
+          acquisition_date: acqInput.value || null,
           stock_total: 1, status: statusDD.get() || 'tersedia',
         };
         if (rec) await DB.updateAsset(rec.id, payload); else await DB.createAsset(payload);
@@ -943,32 +947,32 @@
     var cats = [];
     try { cats = await DB.categories(); } catch (e) {}
     var ov = overlay(), m = el('div', { class: 'sesd-modal', style: 'width:420px' });
-    m.appendChild(el('h3', {}, 'Kelola Kategori'));
-    m.appendChild(el('p', { style: 'color:var(--text-muted);font-size:.85rem;margin:-6px 0 12px' }, 'Tambah kategori baru atau hapus yang tidak dipakai.'));
+    m.appendChild(el('h3', {}, 'Kelola Jenis BMN'));
+    m.appendChild(el('p', { style: 'color:var(--text-muted);font-size:.85rem;margin:-6px 0 12px' }, 'Tambah jenis BMN baru atau hapus yang tidak dipakai.'));
     var list = el('div', { style: 'display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;margin-bottom:12px' });
     function row(c) {
       var r = el('div', { style: 'display:flex;align-items:center;gap:8px;padding:.5rem .7rem;border:1px solid var(--border);border-radius:10px' });
       r.appendChild(el('span', { style: 'flex:1;font-weight:600;font-size:.85rem' }, c.name));
       var del = el('button', { class: 'sesd-btn sesd-btn-sm sesd-btn-danger', html: ic('trash') });
       del.addEventListener('click', function () {
-        confirmAction({ title: 'Hapus Kategori', message: 'Hapus kategori "' + c.name + '"? Aset yang memakainya akan menjadi tanpa kategori.', variant: 'danger', confirmLabel: 'Ya, hapus' }, async function () {
-          await DB.deleteCategory(c.id); cats = cats.filter(function (x) { return x.id !== c.id; }); draw(); toast('Kategori dihapus', 'success'); reloadData();
+        confirmAction({ title: 'Hapus Jenis BMN', message: 'Hapus jenis BMN "' + c.name + '"? Aset yang memakainya akan menjadi tanpa jenis BMN.', variant: 'danger', confirmLabel: 'Ya, hapus' }, async function () {
+          await DB.deleteCategory(c.id); cats = cats.filter(function (x) { return x.id !== c.id; }); draw(); toast('Jenis BMN dihapus', 'success'); reloadData();
         });
       });
       r.appendChild(del); return r;
     }
-    function draw() { list.innerHTML = ''; if (!cats.length) list.appendChild(el('div', { style: 'color:var(--text-muted);font-size:.85rem;padding:.5rem' }, 'Belum ada kategori.')); else cats.forEach(function (c) { list.appendChild(row(c)); }); }
+    function draw() { list.innerHTML = ''; if (!cats.length) list.appendChild(el('div', { style: 'color:var(--text-muted);font-size:.85rem;padding:.5rem' }, 'Belum ada jenis BMN.')); else cats.forEach(function (c) { list.appendChild(row(c)); }); }
     draw(); m.appendChild(list);
     var addWrap = el('div', { style: 'display:flex;gap:8px' });
-    var addInput = el('input', { type: 'text', placeholder: 'Nama kategori baru', style: 'flex:1' });
+    var addInput = el('input', { type: 'text', placeholder: 'Nama jenis BMN baru', style: 'flex:1' });
     var addBtn = el('button', { class: 'sesd-btn sesd-btn-primary', html: ic('check') + ' Tambah' });
     function doAdd() {
       var name = addInput.value.trim(); if (!name) return;
-      if (cats.some(function (c) { return (c.name || '').trim().toLowerCase() === name.toLowerCase(); })) { toast('Kategori sudah ada', 'error'); return; }
+      if (cats.some(function (c) { return (c.name || '').trim().toLowerCase() === name.toLowerCase(); })) { toast('Jenis BMN sudah ada', 'error'); return; }
       withLoading(addBtn, async function () {
         var res = await DB.createCategory({ name: name });
         cats.push({ id: res && (res.id != null ? res.id : (res.category && res.category.id)), name: name });
-        addInput.value = ''; draw(); toast('Kategori ditambahkan', 'success'); reloadData();
+        addInput.value = ''; draw(); toast('Jenis BMN ditambahkan', 'success'); reloadData();
       });
     }
     addBtn.addEventListener('click', doAdd);
@@ -1006,7 +1010,7 @@
     m.appendChild(el('h3', { style: 'font-size:1.3rem;font-weight:800;margin:2px 0' }, r.name || ''));
     m.appendChild(el('p', { style: 'color:var(--text-muted);font-size:.85rem;margin-bottom:1rem' }, r.brand || ''));
     var grid = el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem' });
-    [['Kategori', r.category], ['Ruangan', r.room], ['Tahun', r.year], ['Kondisi', r.condition], ['Jenis', r.type], ['Tipe', r.asset_type]].forEach(function (kv) {
+    [['Jenis BMN', r.category], ['Ruangan', r.room], ['Tanggal Perolehan', fmtTanggal(r.acquisition_date)], ['Kondisi', r.condition], ['Jenis', r.type], ['Tipe', r.asset_type]].forEach(function (kv) {
       var box = el('div', { style: 'background:var(--bg);border-radius:10px;padding:.6rem .75rem' });
       box.appendChild(el('div', { style: 'font-size:.66rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:.5px' }, kv[0]));
       box.appendChild(el('div', { style: 'font-size:.85rem;font-weight:600;margin-top:2px' }, (kv[1] != null && kv[1] !== '') ? String(kv[1]) : '-'));
@@ -1133,7 +1137,7 @@
       line1.appendChild(el('span', { style: 'font-family:"JetBrains Mono",monospace;font-size:.75rem;font-weight:700' }, u.code || '-'));
       if (u.brand) line1.appendChild(el('span', { style: 'font-size:.78rem;font-weight:600;color:var(--text)' }, u.brand));
       info.appendChild(line1);
-      info.appendChild(el('div', { style: 'font-size:.7rem;color:var(--text-muted)' }, (u.condition || 'Baik') + ' · ' + (isMaint ? 'Maintenance' : (avail ? 'Tersedia' : 'Dipinjam')) + (u.qr_code ? (' · ' + u.qr_code) : '')));
+      info.appendChild(el('div', { style: 'font-size:.7rem;color:var(--text-muted)' }, (u.condition || 'Baik') + ' · ' + (isMaint ? 'Maintenance' : (avail ? 'Tersedia' : 'Dipinjam')) + (u.qr_code ? (' · ' + u.qr_code) : '') + (u.acquisition_date ? (' · diperoleh ' + fmtTanggal(u.acquisition_date)) : '')));
       row.appendChild(info);
       var qrBtn = el('button', { class: 'sesd-btn sesd-btn-sm sesd-btn-ghost', html: ic('tag') + ' QR' });
       qrBtn.addEventListener('click', function (e) { e.stopPropagation(); if (window.SESDIAN_QR) { ov.remove(); window.SESDIAN_QR.showFor(u); } else { toast('Modul QR belum siap', 'error'); } });
@@ -1257,9 +1261,9 @@
 
   function openCategoryForm(rec) {
     overlayForm({
-      title: rec ? 'Edit Kategori' : 'Tambah Kategori', submitLabel: rec ? 'Simpan' : 'Tambah',
+      title: rec ? 'Edit Jenis BMN' : 'Tambah Jenis BMN', submitLabel: rec ? 'Simpan' : 'Tambah',
       fields: [
-        { name: 'name', label: 'Nama Kategori', value: rec && rec.name },
+        { name: 'name', label: 'Nama Jenis BMN', value: rec && rec.name },
         { name: 'icon', label: 'Ikon', type: 'select', value: iconFor(rec && rec.icon) || 'package',
           options: ['package', 'monitor', 'chair', 'car', 'wrench', 'file', 'tag', 'archive', 'home', 'building', 'phone'].map(function (k) { return { value: k, label: k }; }) },
       ],
@@ -1434,7 +1438,7 @@
     edit.addEventListener('click', function (e) { e.stopPropagation(); kind === 'category' ? openCategoryForm(rec) : openRoomForm(rec); });
     del.addEventListener('click', function (e) {
       e.stopPropagation();
-      confirmDelete((kind === 'category' ? 'kategori "' : 'ruangan "') + rec.name + '"', async function () {
+      confirmDelete((kind === 'category' ? 'jenis BMN "' : 'ruangan "') + rec.name + '"', async function () {
         if (kind === 'category') await DB.deleteCategory(rec.id); else await DB.deleteRoom(rec.id);
         toast('Dihapus', 'success'); reloadData();
       });
@@ -1448,6 +1452,8 @@
     tr.appendChild(el('th', { 'data-aksi-th': '', style: th0 ? th0.getAttribute('style') : 'padding:0.875rem 1rem;text-align:left' }, 'Aksi'));
   }
   function todayISO() { var d = new Date(); var p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+  var BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  function fmtTanggal(v) { if (!v) return '-'; var p = String(v).slice(0, 10).split('-'); if (p.length !== 3) return String(v); return parseInt(p[2], 10) + ' ' + BULAN_ID[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
   function isOverdue(rec) { return ['pending', 'approved', 'borrowed'].indexOf(rec.status) !== -1 && rec.due_date && rec.due_date < todayISO(); }
   function openWaLink(wa, text) { if (wa) window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(text || ''), '_blank'); }
   async function doNotify(rec, kind, okMsg) {
@@ -1787,7 +1793,7 @@
   /* ---------------- dynamic app shell (for new pages that opt in) ----------------
      A page using <aside data-shell></aside> + a sticky <div data-topbar></div>
      gets the standard sidebar + topbar built here, so it needs no copied markup. */
-  var PAGE_TITLES = { dashboard: 'Dashboard', dataaset: 'Data Aset', kategoriaset: 'Kategori Aset', ruangan: 'Ruangan', daftarpinjam: 'Daftar Pinjam', ajukanpinjam: 'Ajukan Pinjam', dipinjam: 'Sedang Dipinjam', users: 'Kelola User', verifikasi: 'Verifikasi', laporan: 'Laporan', profil: 'Profil Saya' };
+  var PAGE_TITLES = { dashboard: 'Dashboard', dataaset: 'Data Aset', kategoriaset: 'Jenis BMN', ruangan: 'Ruangan', daftarpinjam: 'Daftar Pinjam', ajukanpinjam: 'Ajukan Pinjam', dipinjam: 'Sedang Dipinjam', users: 'Kelola User', verifikasi: 'Verifikasi', laporan: 'Laporan', profil: 'Profil Saya' };
   // Per-page chrome icons (topbar breadcrumb). NAV_ICONS keys map a sidebar link's
   // href → the same icon, so the menu and the header always agree (fixes the old
   // hard-coded "home" icon that showed on every page — see REDESIGN-GUIDE #2/#5).
@@ -1914,7 +1920,7 @@
       { label: 'Tambah Aset', icon: 'package', onClick: function () { openAssetForm(null); } },
       { label: 'Import Excel', variant: 'success', icon: 'archive', onClick: function () { if (window.SESDIAN_IMPORT) window.SESDIAN_IMPORT.open(); else toast('Modul import belum siap', 'error'); } },
     ]);
-    else if (p === 'kategoriaset') bar([{ label: 'Tambah Kategori', onClick: function () { openCategoryForm(null); } }]);
+    else if (p === 'kategoriaset') bar([{ label: 'Tambah Jenis BMN', onClick: function () { openCategoryForm(null); } }]);
     else if (p === 'ruangan') bar([{ label: 'Tambah Ruangan', onClick: function () { openRoomForm(null); } }]);
     else if (p === 'users') bar([{ label: 'Tambah User', icon: 'user', onClick: function () { openUserForm(); } }]);
   }
@@ -2317,7 +2323,7 @@
   }
 
   function translateBreadcrumbs() {
-    var map = { dashboard: 'Dashboard', dataaset: 'Data Aset', kategoriaset: 'Kategori Aset', ruangan: 'Ruangan', daftarpinjam: 'Daftar Pinjam', ajukanpinjam: 'Ajukan Pinjam', users: 'Kelola User' };
+    var map = { dashboard: 'Dashboard', dataaset: 'Data Aset', kategoriaset: 'Jenis BMN', ruangan: 'Ruangan', daftarpinjam: 'Daftar Pinjam', ajukanpinjam: 'Ajukan Pinjam', users: 'Kelola User' };
     var p = page();
     if (map[p]) {
       byText(new RegExp('^' + p + '$', 'i'), 'span').forEach(function(e) { e.textContent = map[p]; });

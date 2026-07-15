@@ -16,6 +16,8 @@
   }
   var ic = function (n) { return window.sesdIcon ? window.sesdIcon(n) : ''; };
   var page = function () { return document.body.getAttribute('data-page'); };
+  var BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  function fmtTanggal(v) { if (!v) return '-'; var p = String(v).slice(0, 10).split('-'); if (p.length !== 3) return String(v); return parseInt(p[2], 10) + ' ' + BULAN_ID[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
   var PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='130'%3E%3Crect width='200' height='130' fill='%23e0e7ff'/%3E%3Cg fill='none' stroke='%236366f1' stroke-width='4'%3E%3Cpath d='M100 42 72 56v34l28 14 28-14V56z'/%3E%3Cpath d='M72 56l28 14 28-14M100 70v34'/%3E%3C/g%3E%3C/svg%3E";
 
   function toast(msg, type) {
@@ -194,7 +196,7 @@
     root.appendChild(el('p', { style: 'color:var(--text-muted)' }, a.brand || ''));
 
     var grid = el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:1rem 0' });
-    [['Kategori', a.category], ['Ruangan', a.room], ['Tahun', a.year], ['Kondisi', a.condition], ['Jenis', a.type], ['Tipe', a.asset_type]].forEach(function (kv) {
+    [['Jenis BMN', a.category], ['Ruangan', a.room], ['Tanggal Perolehan', fmtTanggal(a.acquisition_date)], ['Kondisi', a.condition], ['Jenis', a.type], ['Tipe', a.asset_type]].forEach(function (kv) {
       var box = el('div', { style: 'background:var(--bg);border-radius:10px;padding:0.6rem 0.75rem' });
       box.appendChild(el('div', { style: 'font-size:0.66rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:.5px' }, kv[0]));
       box.appendChild(el('div', { style: 'font-size:0.9rem;font-weight:600;margin-top:2px' }, (kv[1] != null && kv[1] !== '') ? String(kv[1]) : '-'));

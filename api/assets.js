@@ -2,6 +2,20 @@ import { getSql } from './_db.js';
 import { requireAuth, requireAdmin, send, readJson } from './_auth.js';
 import { ensureSchema } from './_schema.js';
 
+// Normalise an acquisition-date value to 'YYYY-MM-DD' (or null). Accepts an ISO
+// string, a plain date, or an Excel-style value that starts with the date; any
+// time portion is dropped. Returns null for empty; returns null (invalid) only
+// when a non-empty value can't be parsed as a real calendar date.
+function normDate(v) {
+  if (v == null || v === '') return null;
+  const s = String(v).trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) { const d = new Date(m[0] + 'T00:00:00Z'); return isNaN(d.getTime()) ? null : m[0]; }
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return send(res, 204, {});
   const sql = getSql();
@@ -22,6 +36,7 @@ export default async function handler(req, res) {
                coalesce(a.asset_type,'') as asset_type,
                a.stock_total, a.stock_available, a.stock_borrowed,
                coalesce(a.status,'tersedia') as status,
+               to_char(a.acquisition_date, 'YYYY-MM-DD') as acquisition_date,
                a.category_id, a.room_id, a.image, a.qr_code,
                coalesce(c.name,'') as category, coalesce(r.name,'') as room,
                ai.name_key as jenis_key, extract(epoch from ai.updated_at)::bigint as jenis_ver,
@@ -58,11 +73,13 @@ export default async function handler(req, res) {
       if (!b.code || !b.name) return send(res, 400, { error: 'Kode dan nama aset wajib diisi' });
       const total = Math.max(0, parseInt(b.stock_total || 1, 10));
       const status = (b.status === 'maintenance') ? 'maintenance' : 'tersedia';
+      const acq = normDate(b.acquisition_date);
+      if (b.acquisition_date && acq === null) return send(res, 400, { error: 'Format tanggal perolehan tidak valid (gunakan YYYY-MM-DD)' });
       const rows = await sql`
-        insert into assets (code, name, category_id, brand, room_id, year, condition, type, asset_type, stock_total, stock_available, stock_borrowed, image, status)
+        insert into assets (code, name, category_id, brand, room_id, year, condition, type, asset_type, stock_total, stock_available, stock_borrowed, image, status, acquisition_date)
         values (${b.code}, ${b.name}, ${b.category_id || null}, ${b.brand || null}, ${b.room_id || null},
                 ${b.year ? parseInt(b.year, 10) : null}, ${b.condition || 'Baik'}, ${b.type || 'BMN'},
-                ${b.asset_type || 'Fixed Asset'}, ${total}, ${total}, 0, ${b.image || null}, ${status})
+                ${b.asset_type || 'Fixed Asset'}, ${total}, ${total}, 0, ${b.image || null}, ${status}, ${acq}::date)
         returning id`;
       const newId = rows[0].id;
       // auto-assign a unique QR code so every asset has a scannable detail page
@@ -78,7 +95,7 @@ export default async function handler(req, res) {
       const b = await readJson(req);
       const id = parseInt(b.id, 10);
       if (!id) return send(res, 400, { error: 'ID tidak valid' });
-      const cur = await sql`select code, name, category_id, brand, room_id, year, condition, type, asset_type, stock_total, stock_borrowed, image, coalesce(status,'tersedia') as status from assets where id = ${id}`;
+      const cur = await sql`select code, name, category_id, brand, room_id, year, condition, type, asset_type, stock_total, stock_borrowed, image, coalesce(status,'tersedia') as status, to_char(acquisition_date,'YYYY-MM-DD') as acquisition_date from assets where id = ${id}`;
       if (!cur.length) return send(res, 404, { error: 'Aset tidak ditemukan' });
       const c = cur[0];
       const has = (k) => Object.prototype.hasOwnProperty.call(b, k);
@@ -100,12 +117,17 @@ export default async function handler(req, res) {
       const avail      = Math.max(0, total - c.stock_borrowed);
       const image      = has('image') && b.image ? String(b.image) : c.image;
       const status     = has('status') ? ((b.status === 'maintenance') ? 'maintenance' : 'tersedia') : c.status;
+      let acqDate = c.acquisition_date;
+      if (has('acquisition_date')) {
+        acqDate = normDate(b.acquisition_date);
+        if (b.acquisition_date && acqDate === null) return send(res, 400, { error: 'Format tanggal perolehan tidak valid (gunakan YYYY-MM-DD)' });
+      }
       await sql`
         update assets set
           code = ${code}, name = ${name}, category_id = ${categoryId}, brand = ${brand},
           room_id = ${roomId}, year = ${year}, condition = ${condition}, type = ${type},
           asset_type = ${assetType}, stock_total = ${total}, stock_available = ${avail}, image = ${image},
-          status = ${status}
+          status = ${status}, acquisition_date = ${acqDate}::date
         where id = ${id}`;
       return send(res, 200, { ok: true });
     } catch (e) { return send(res, 500, { error: e.message }); }
@@ -173,12 +195,13 @@ async function importAssets(sql, rows, res) {
         const catId = await resolveCat(r.category);
         const roomId = await resolveRoom(r.room);
         const type = String(r.type || '').toLowerCase().includes('non') ? 'Non-BMN' : 'BMN';
+        const acq = normDate(r.acquisition_date);
         await sql`
           insert into assets (code, name, category_id, brand, room_id, year, condition, type, asset_type,
-                              stock_total, stock_available, stock_borrowed)
+                              stock_total, stock_available, stock_borrowed, acquisition_date)
           values (${code}, ${name}, ${catId}, ${r.brand || null}, ${roomId},
                   ${r.year ? parseInt(r.year, 10) : null}, ${r.condition || 'Baik'}, ${type},
-                  ${r.asset_type || 'Fixed Asset'}, ${total}, ${total}, 0)`;
+                  ${r.asset_type || 'Fixed Asset'}, ${total}, ${total}, 0, ${acq}::date)`;
         codes.add(code.toLowerCase());
         success++;
       } catch (e) { errors.push({ row: ln, error: e.message }); }

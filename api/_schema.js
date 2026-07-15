@@ -11,6 +11,7 @@ export async function ensureSchema(sql) {
     await sql`alter table assets add column if not exists qr_code text`;
     await sql`alter table assets add column if not exists qr_generated_at timestamptz`;
     await sql`alter table assets add column if not exists status text default 'tersedia'`;
+    await sql`alter table assets add column if not exists acquisition_date date`;   // tanggal perolehan (satu per barang)
     await sql`alter table borrowings add column if not exists approved_by  bigint`;
     await sql`alter table borrowings add column if not exists approved_at  timestamptz`;
     await sql`alter table borrowings add column if not exists verified_by  bigint`;
