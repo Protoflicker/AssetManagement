@@ -176,5 +176,46 @@
     document.body.appendChild(a); a.click(); a.remove();
   }
 
-  window.SESDIAN_IMPORT = { open: open };
+  // Export the ENTIRE asset database (admin) to a real .xlsx — mirrors the daftar
+  // aset columns plus stock/status/QR so the file round-trips through Import.
+  async function exportAll(btn) {
+    var orig = btn ? btn.innerHTML : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Menyiapkan…'; }
+    try {
+      var XLSX = await ensureXlsx();
+      var assets = await DB.assets();
+      assets = assets.slice().sort(function (a, b) { return String(a.name || '').localeCompare(String(b.name || '')) || String(a.code || '').localeCompare(String(b.code || '')); });
+      var rows = assets.map(function (a, i) {
+        return {
+          'No': i + 1,
+          'Kode': a.code || '',
+          'Nama Barang': a.name || '',
+          'Jenis BMN': a.category || '',
+          'Merek': a.brand || '',
+          'Kondisi': a.condition || '',
+          'Jenis': a.type || '',
+          'Tanggal Perolehan': a.acquisition_date ? String(a.acquisition_date).slice(0, 10) : '',
+          'Ruangan': a.room || '',
+          'Stok Total': a.stock_total,
+          'Stok Tersedia': a.stock_available,
+          'Stok Dipinjam': a.stock_borrowed,
+          'Status': a.status || '',
+          'Kode QR': a.qr_code || ''
+        };
+      });
+      var ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{ wch: 5 }, { wch: 14 }, { wch: 34 }, { wch: 24 }, { wch: 22 }, { wch: 12 }, { wch: 9 }, { wch: 16 }, { wch: 18 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 11 }];
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Daftar Aset');
+      var today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'daftar-aset-sesdian-' + today + '.xlsx');
+      toast('Daftar aset diekspor (' + rows.length + ' barang)', 'success');
+    } catch (e) {
+      toast((e && e.message) || 'Gagal mengekspor daftar aset', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+    }
+  }
+
+  window.SESDIAN_IMPORT = { open: open, exportAll: exportAll };
 })();

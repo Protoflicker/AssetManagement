@@ -1145,6 +1145,18 @@ body[data-page="register"] input:focus {
   transform: translateY(-4px) !important;
 }
 
+/* A panel that WRAPS a table must not lift/scale on hover — hovering to read a
+   row should never make the whole panel "pop out" (Kelola User, Daftar Pinjam,
+   Verifikasi, Laporan, dsb). The row highlight stays the only hover affordance.
+   :has() is already relied on elsewhere in this file, so support is fine. */
+[style*="box-shadow"]:has(table):hover,
+[style*="border-radius"]:has(table):hover,
+.laporan-table-wrapper:hover,
+.sesd-table-wrap:hover {
+  transform: none !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
 /* ══════════════════════════════════════════════════════════
    DATA ASET — STAT CARDS (#9)
    One cohesive, theme-aware palette with comfortable spacing,
