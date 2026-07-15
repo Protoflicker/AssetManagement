@@ -1919,7 +1919,7 @@
     if (p === 'dataaset') bar([
       { label: 'Tambah Aset', icon: 'package', onClick: function () { openAssetForm(null); } },
       { label: 'Import Excel', variant: 'success', icon: 'archive', onClick: function () { if (window.SESDIAN_IMPORT) window.SESDIAN_IMPORT.open(); else toast('Modul import belum siap', 'error'); } },
-      { label: 'Export Excel', variant: 'ghost', icon: 'file', onClick: function () { if (window.SESDIAN_IMPORT && window.SESDIAN_IMPORT.exportAll) window.SESDIAN_IMPORT.exportAll(this); else toast('Modul export belum siap', 'error'); } },
+      { label: 'Export Excel', variant: 'danger', icon: 'file', onClick: function () { if (window.SESDIAN_IMPORT && window.SESDIAN_IMPORT.exportAll) window.SESDIAN_IMPORT.exportAll(this); else toast('Modul export belum siap', 'error'); } },
     ]);
     else if (p === 'kategoriaset') bar([{ label: 'Tambah Jenis BMN', onClick: function () { openCategoryForm(null); } }]);
     else if (p === 'ruangan') bar([{ label: 'Tambah Ruangan', onClick: function () { openRoomForm(null); } }]);
