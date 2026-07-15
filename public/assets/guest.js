@@ -129,10 +129,17 @@
       }
     });
     // #10 — room catalog: ?room=<name> shows only that room's items (QR target).
+    // Distinct from the public catalog: no info box, a room banner instead
+    // (both toggled before first paint by the head script via html.sesd-room).
     var roomFilter = qs('room');
     if (roomFilter) {
       assets = assets.filter(function (a) { return (a.room || '').toLowerCase() === roomFilter.toLowerCase(); });
       document.title = 'SESDIAN - Ruangan ' + roomFilter;
+      var nameEl = $('[data-room-name]'); if (nameEl) nameEl.textContent = roomFilter;
+      var subEl = $('[data-room-sub]');
+      if (subEl) subEl.textContent = assets.length
+        ? (assets.length + ' barang tercatat berada di ruangan ini')
+        : 'Belum ada barang yang tercatat di ruangan ini';
     }
     var groups = groupCatalog(assets);
     var state = { q: '', cat: 'all' };
