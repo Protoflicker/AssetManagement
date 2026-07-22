@@ -121,7 +121,7 @@
         var wb = XLSX.read(buf, { type: 'array', cellDates: true });
         var sheet = wb.Sheets[wb.SheetNames[0]];
         var raw = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-        // #5 — reject files that don't follow the template (must have Kode + Nama columns)
+        // Reject files that don't follow the template (must have Kode + Nama columns)
         var headers = raw.length ? Object.keys(raw[0]).map(function (h) { return String(h).trim().toLowerCase(); }) : [];
         var hasCode = headers.some(function (h) { return FIELDS.code.indexOf(h) !== -1 || h === 'kode barang'; });
         var hasName = headers.some(function (h) { return FIELDS.name.indexOf(h) !== -1; });

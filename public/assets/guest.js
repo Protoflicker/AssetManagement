@@ -130,7 +130,7 @@
         setTimeout(function() { numEl.style.opacity = '1'; }, i * 100);
       }
     });
-    // #10 — room catalog: ?room=<name> shows only that room's items (QR target).
+    // Room catalog: ?room=<name> shows only that room's items (QR target).
     // Distinct from the public catalog: no info box, a room banner instead
     // (both toggled before first paint by the head script via html.sesd-room).
     var roomFilter = qs('room');

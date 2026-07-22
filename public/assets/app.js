@@ -252,7 +252,7 @@
       e.textContent = user.role || 'user';
       setTimeout(function() { e.style.opacity = '1'; }, 250);
     });
-    // #7 — show the NIP consistently. Any opt-in [data-user-nip] element gets it,
+    // Show the NIP consistently. Any opt-in [data-user-nip] element gets it,
     // and the sidebar account card's sub-line surfaces the NIP so the left-sidebar
     // identity matches the top-right header (both carry the NIP).
     var nipText = user.nip ? ('NIP ' + user.nip) : '';
@@ -385,11 +385,11 @@
           }
         });
         renderList('[data-recent-template]', d.recent);
-        wireRecentToolbar();          // #11 — replace "Lihat Semua" with search + filter
+        wireRecentToolbar();          // Replace "Lihat Semua" with search + filter
       } else if (p === 'dataaset') {
         var assets = await DB.assets();
         var groups = groupAssets(assets);                        // collapse identical items into tidy cards
-        renderAssetGrid(groups);                                 // clean Notion cards (#6 empty chips, #7 stock X/Y, #8 status badge)
+        renderAssetGrid(groups);                                 // clean Notion cards (empty chips, stock X/Y, status badge)
         var sum = function (k) { return assets.reduce(function (t, a) { return t + (a[k] || 0); }, 0); };
         var aStats = { total_assets: assets.length, total_stock: sum('stock_total'), stock_available: sum('stock_available'), stock_borrowed: sum('stock_borrowed'), maintenance: assets.filter(function (a) { return a.status === 'maintenance'; }).length };
         Object.keys(aStats).forEach(function (k) { var e = $('[data-stat="' + k + '"]'); if (e) e.textContent = aStats[k]; });
@@ -403,11 +403,11 @@
         renderList('[data-template]', await DB.rooms().then(function (rs) { if (roomsSub) roomsSub.textContent = rs.length + ' ruangan terdaftar'; return rs; }), function (n, r) {
           n.setAttribute('data-id', r.id);
           n.style.cursor = 'pointer';
-          n.addEventListener('click', function (e) { if (e.target.closest('.sesd-admin-actions')) return; openRoomDetail(r); });   // #9 — view/edit room contents
+          n.addEventListener('click', function (e) { if (e.target.closest('.sesd-admin-actions')) return; openRoomDetail(r); });   // View/edit room contents
           if (IS_ADMIN) enhanceSimpleCard(n, r, 'room');
         });
       } else if (p === 'daftarpinjam') {
-        // #9 — full borrowing history (Riwayat). The API scopes rows per role:
+        // Full borrowing history (Riwayat). The API scopes rows per role:
         // a user sees only their own loans (so the page finally works for users);
         // admin/verifikator see everyone's and can search by borrower name.
         var allbs = await DB.borrowings();
@@ -566,7 +566,7 @@
     yes.addEventListener('click', async function () { yes.disabled = true; try { await onYes(); close(); } catch (e) { toast((e && e.message) || 'Gagal', 'error'); yes.disabled = false; } });
   }
 
-  // #8 — generic second-confirmation dialog ("apakah anda yakin? ya/tidak") used
+  // Generic second-confirmation dialog ("apakah anda yakin? ya/tidak") used
   // for every verification action (approve, verify, return, reject, ...).
   function confirmAction(opts, onYes) {
     // must be allowed ON TOP of another modal (e.g. the "Sedang Dipinjam" list
@@ -875,11 +875,11 @@
     }).catch(function () {});
     function field(labelText, control) { var w = el('div', { class: 'sesd-field' }); w.appendChild(el('label', {}, labelText)); w.appendChild(control); return w; }
 
-    var nameW = buildNameField(rec && rec.name, names, nameMap);          // #6 — autocomplete + status icon
+    var nameW = buildNameField(rec && rec.name, names, nameMap);          // Autocomplete + status icon
     m.appendChild(field('Nama Aset', nameW.wrap));
     var codeInput = el('input', { type: 'text', placeholder: 'Kode unik untuk barang ini' }); if (rec && rec.code) codeInput.value = rec.code;
     m.appendChild(field('Kode', codeInput));
-    var catDD = buildDropdown({                                           // #8 — styled category dropdown + add/delete
+    var catDD = buildDropdown({                                           // Styled category dropdown + add/delete
       value: rec && rec.category_id, placeholder: 'Pilih jenis BMN',
       options: cats.map(function (c) { return { value: c.id, label: c.name }; }),
       addPlaceholder: 'Nama jenis BMN baru',
@@ -941,7 +941,7 @@
       } catch (e) { toast((e && e.message) || 'Gagal menyimpan', 'error'); save.disabled = false; save.textContent = rec ? 'Simpan' : 'Tambah'; }
     });
   }
-  // #8 — manage categories (add / delete) without a dedicated page.
+  // Manage categories (add / delete) without a dedicated page.
   async function openCategoryManager() {
     if (modalOpen()) return;
     var cats = [];
@@ -1291,7 +1291,7 @@
     var origin = location.origin + location.pathname.replace(/[^/]*$/, '');
     return origin + 'katalog.html?room=' + encodeURIComponent(room.name || '');
   }
-  // #10 — QR that opens the room's public catalog (what's inside the room).
+  // QR that opens the room's public catalog (what's inside the room).
   async function showRoomQR(room) {
     if (!window.SESDIAN_QR) { toast('Modul QR belum siap', 'error'); return; }
     // opens ON TOP of the room-detail modal, so only block a duplicate QR dialog
@@ -1323,7 +1323,7 @@
       w.document.close();
     });
   }
-  // #9 — room detail: everyone sees what's in the room; admin adds/removes items.
+  // Room detail: everyone sees what's in the room; admin adds/removes items.
   async function openRoomDetail(room) {
     if (modalOpen()) return;
     // build the modal immediately (with a loader) so rapid clicks can't open
@@ -1471,7 +1471,7 @@
     rejected:       { title: 'Tolak Permintaan',         message: 'Apakah Anda yakin menolak permintaan ini?',                    variant: 'danger',  confirmLabel: 'Ya, tolak' },
     cancelled:      { title: 'Batalkan Pengajuan',       message: 'Batalkan pengajuan peminjaman ini? Stok akan dikembalikan dan pengajuan tidak dapat dilanjutkan.', variant: 'danger', confirmLabel: 'Ya, batalkan' },
   };
-  // #8 — every status change asks for a second confirmation before it runs.
+  // Every status change asks for a second confirmation before it runs.
   function changeStatus(rec, status) {
     var c = STATUS_CONFIRM[status] || { title: 'Konfirmasi', message: 'Apakah Anda yakin ingin melanjutkan?' };
     confirmAction(c, async function () {
@@ -1554,7 +1554,7 @@
       roleTd.appendChild(roleBadge(u.role));
       tr.appendChild(roleTd);
       var actTd = el('td', { style: td });
-      var wrap = el('div', { class: 'sesd-role-actions' });   // #2 — one cohesive, equally-rounded control group
+      var wrap = el('div', { class: 'sesd-role-actions' });   // One cohesive, equally-rounded control group
       var sel = el('select', { class: 'sesd-role-select', 'aria-label': 'Ubah peran ' + u.name, style: 'border-radius:12px!important;-webkit-appearance:none!important;appearance:none!important' });
       ['user', 'verifikator', 'admin'].forEach(function (r) { var o = el('option', { value: r }, ROLE_META[r][0]); if (u.role === r) o.selected = true; sel.appendChild(o); });
       sel.addEventListener('change', async function () { sel.disabled = true; try { await DB.setUserRole(u.id, sel.value); toast('Role diperbarui', 'success'); renderUsers(); } catch (e) { toast((e && e.message) || 'Gagal', 'error'); renderUsers(); } });
@@ -1579,7 +1579,7 @@
     });
   }
 
-  /* ====================== #6 — Profile page ====================== */
+  /* ====================== Profile page ====================== */
   function avatarKeyFor(u) { return 'sesdian_avatar_' + ((u && (u.nip || u.name)) || 'anon'); }
   function getAvatarLS(u) { try { return localStorage.getItem(avatarKeyFor(u)) || ''; } catch (e) { return ''; } }
   function setAvatarLS(u, d) { try { localStorage.setItem(avatarKeyFor(u), d); } catch (e) {} }
@@ -1855,7 +1855,7 @@
     left.innerHTML = '<span class="ic" style="color:var(--text-muted);display:inline-flex;flex-shrink:0">' + pageIcon(page()) +
       '</span><span style="color:var(--text);font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
       (PAGE_TITLES[page()] || '') + '</span>';
-    // #3 — header stays pinned and casts a subtle shadow once the page scrolls.
+    // Header stays pinned and casts a subtle shadow once the page scrolls.
     if (!header._sesdScroll) {
       header._sesdScroll = true;
       var mainEl = $('main');
@@ -1872,7 +1872,7 @@
     installBrandLogo();
     normalizeSidebarIcons();
     normalizeTopbar();
-    // #8 — the Kategori Aset page is gone (managed from the Data Aset toolbar);
+    // The Kategori Aset page is gone (managed from the Data Aset toolbar);
     // drop its nav link on the static-shell pages that still hard-code it.
     $$('aside a[href="kategoriaset.html"]').forEach(function (a) { a.remove(); });
   }
@@ -1887,7 +1887,7 @@
         var btn = el('button', { class: 'sesd-btn sesd-btn-lg sesd-btn-' + (b.variant || 'primary'), html: (b.icon ? ic(b.icon) + ' ' : '') + b.label });
         btn.addEventListener('click', b.onClick); wrap.appendChild(btn);
       });
-      // #3 — dock the action buttons to the right of the page title instead of
+      // Dock the action buttons to the right of the page title instead of
       // stacking them above the management area.
       var h1 = inner.querySelector('h1');
       if (h1) {
@@ -2031,11 +2031,11 @@
   // Ajukan Pinjam page: grouped cards (like Data Aset). Click a card -> detail
   // modal where the exact unit(s) to borrow are picked. The old right-side
   // "Detail Peminjaman" panel is hidden since borrowing now happens in the modal.
-  /* ---- Data Aset grid: built fully in JS so we control empty chips (#6),
-          the X/Y stock format (#7) and a meaningful availability badge (#8).
-          Theme-aware via CSS classes (no hard-coded colours) — see #4. ---- */
+  /* ---- Data Aset grid: built fully in JS so we control empty chips,
+          the X/Y stock format and a meaningful availability badge.
+          Theme-aware via CSS classes (no hard-coded colours). ---- */
   function assetChip(iconName, text) {
-    if (text == null || String(text).trim() === '') return null;   // #6 — never render an empty chip
+    if (text == null || String(text).trim() === '') return null;   // Never render an empty chip
     var chip = el('span', { class: 'sesd-aset-chip' });
     chip.innerHTML = ic(iconName);
     chip.appendChild(el('span', {}, String(text)));
@@ -2082,11 +2082,11 @@
         var ch = assetChip(c[0], c[1]); if (ch) chips.appendChild(ch);
       });
       if (chips.children.length) body.appendChild(chips);
-      if (g.condition) body.appendChild(el('span', { class: 'sesd-aset-cond' }, g.condition));  // #1 — keep STOK as the last (bottom-pinned) element
+      if (g.condition) body.appendChild(el('span', { class: 'sesd-aset-cond' }, g.condition));  // Keep STOK as the last (bottom-pinned) element
       var stock = el('div', { class: 'sesd-aset-stock' });
       var sr = el('div', { class: 'sesd-aset-stock-row' });
       sr.appendChild(el('span', { class: 'sesd-aset-stock-label' }, 'STOK'));
-      var num = el('span', { class: 'sesd-aset-stock-num' });       // #7 — "16/16" with a slash
+      var num = el('span', { class: 'sesd-aset-stock-num' });       // "16/16" with a slash
       num.appendChild(el('span', { class: 'is-avail' }, String(avail)));
       num.appendChild(el('span', { class: 'is-sep' }, '/'));
       num.appendChild(el('span', { class: 'is-total' }, String(total)));
@@ -2244,7 +2244,7 @@
     backdrop.addEventListener('click', toggle);
   }
 
-  /* #3 — collapsible sidebar. The header toggle rails the sidebar to an icon-only
+  /* Collapsible sidebar. The header toggle rails the sidebar to an icon-only
      strip on desktop (persisted), and closes the drawer on mobile. Works on both
      static-shell pages (which ship a "‹" button) and dynamic-shell pages (where we
      create the button). */
@@ -2275,7 +2275,7 @@
       var label = t ? ((t.firstElementChild ? t.firstElementChild.textContent : t.textContent) || '').trim() : '';
       if (label) a.title = label;
     });
-    // #1 — tag every section header so rail mode can drop the separators cleanly
+    // Tag every section header so rail mode can drop the separators cleanly
     $$('aside [style*="letter-spacing: 1.5px"], aside [style*="letter-spacing:1.5px"]').forEach(function (lbl) {
       if (lbl.parentNode) lbl.parentNode.classList.add('sesd-navsec');
     });
@@ -2295,7 +2295,7 @@
     });
   }
 
-  // #7 — dashboard greeting: time-of-day + role-aware copy for all three actors
+  // Dashboard greeting: time-of-day + role-aware copy for all three actors
   function setupGreeting() {
     var hiEl = $('[data-greet-hi]'), subEl = $('[data-greet-sub]');
     if (!hiEl && !subEl) return;
@@ -2334,7 +2334,7 @@
   /* ---------------- boot ---------------- */
   // expose the single page loader so page-specific scripts (reports.js) can use it
   window.SESDIAN_LOADER = { show: showPageLoader, hide: hidePageLoader };
-  /* ====================== #11 — mobile card tables ======================
+  /* ====================== mobile card tables ======================
      On phones every table row becomes a self-contained card whose cells carry
      their column name (from the matching <th>) as a data-label. Generic: works
      for every table, template-rendered or JS-rendered. Re-run after each render. */
@@ -2351,7 +2351,7 @@
     });
   }
 
-  /* ====================== #11 — table toolbar (search + filter) ======================
+  /* ====================== table toolbar (search + filter) ======================
      Replaces the "Lihat Semua" button above the dashboard recent table with a live
      search box and a filter-icon dropdown (status). */
   function wireRecentToolbar() {
@@ -2450,7 +2450,7 @@
     host.appendChild(legend);
   }
 
-  /* ====================== #3 — notifications (bell) ====================== */
+  /* ====================== notifications (bell) ====================== */
   function timeAgo(ts) {
     var s = Math.floor((Date.now() - ts) / 1000);
     if (s < 60) return 'baru saja';
@@ -2529,7 +2529,7 @@
     });
     function refresh() { buildNotifList().then(function (l) { items = l; if (!menu) paintBadge(); }); }
     refresh();
-    // #1 — poll so new borrow requests reach the admin without a manual reload,
+    // Poll so new borrow requests reach the admin without a manual reload,
     // and refresh whenever the tab regains focus.
     setInterval(refresh, 30000);
     window.addEventListener('focus', refresh);
@@ -2548,7 +2548,7 @@
     showPageLoader();
     buildShell();                 // fill dynamic sidebar/topbar on pages that opt in
     fillIdentity(USER);
-    // #1 — pull fresh identity (name + photo) from the server so profile edits made
+    // Pull fresh identity (name + photo) from the server so profile edits made
     // on one device show everywhere; non-blocking, best-effort.
     if (USER && DB.profile) DB.profile().then(function (p) {
       if (!p) return;
@@ -2559,7 +2559,7 @@
     injectBorrowedNav();          // "Sedang Dipinjam" link for all authed users
     if (IS_STAFF) injectRoleNav();
     setupGreeting();              // dashboard greeting (role-aware)
-    normalizeChrome();            // brand logo + per-page sidebar/topbar icons (#1/#2/#5)
+    normalizeChrome();            // brand logo + per-page sidebar/topbar icons
     if (IS_ADMIN) injectAdminBars();
     // Kerangka halaman (chevron sidebar, tanggal, breadcrumb, layout mobile) tidak
     // butuh data DB — pasang SEBELUM menunggu load supaya tampilan saat loading
@@ -2573,8 +2573,8 @@
     document.body.classList.add('sesd-ready');   // reveal once DB data is rendered (no hardcoded flash)
     wireActions(); wireNav(); wireModal(); wireSearch(); wireFilters(); fallbacks(); setupNotice();
     reapplyFilters();
-    wireNotifBell();              // #3 — functional notification bell (badge + dropdown)
-    labelizeTables();             // #11 — mobile card-table labels
+    wireNotifBell();              // Functional notification bell (badge + dropdown)
+    labelizeTables();             // Mobile card-table labels
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

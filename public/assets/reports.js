@@ -422,7 +422,7 @@
               pointRadius: 4,
               pointHoverRadius: 6,
               fill: false,
-              tension: 0 // Runcing (straight lines) as requested previously
+              tension: 0 // straight segments between points, no curve smoothing
             }]
           },
           options: {
