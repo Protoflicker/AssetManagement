@@ -15,7 +15,7 @@ const STAFF = ['admin', 'verifikator'];
 //        --(admin verifikasi pengembalian)--> returned
 //   pending --(peminjam batalkan sendiri, tanpa admin)--> cancelled  (stok dikembalikan)
 //   'verified' is kept only for legacy data and treated like 'borrowed' (out).
-function transitionError(prevStatus, target, role, isOwner) {
+export function transitionError(prevStatus, target, role, isOwner) {
   const staff = STAFF.indexOf(role) !== -1;
   let rule;
   if (target === 'approved') rule = { from: ['pending'], ok: role === 'admin', msg: 'Persetujuan awal hanya oleh admin.' };
