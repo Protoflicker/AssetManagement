@@ -16,7 +16,7 @@ test('password yang salah ditolak', () => {
   assert.equal(verifyPassword('sandi-keliru', stored), false);
 });
 
-test('dua hash untuk password yang sama tidak pernah identik (garam per pengguna)', () => {
+test('dua hash untuk password yang sama tidak pernah identik (salt per pengguna)', () => {
   assert.notEqual(hashPassword('sama'), hashPassword('sama'));
 });
 
@@ -24,7 +24,7 @@ test('hash tersimpan berformat salt:hash heksadesimal', () => {
   assert.match(hashPassword('apa saja'), /^[0-9a-f]{32}:[0-9a-f]{128}$/);
 });
 
-test('verifyPassword tidak meledak pada nilai simpanan yang rusak', () => {
+test('verifyPassword tidak error pada hash tersimpan yang rusak', () => {
   assert.equal(verifyPassword('x', ''), false);
   assert.equal(verifyPassword('x', null), false);
   assert.equal(verifyPassword('x', 'bukan-format-yang-benar'), false);
