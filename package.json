@@ -6,13 +6,17 @@
   "description": "SESDIAN asset management — static frontend + Neon-backed serverless API",
   "scripts": {
     "dev": "node dev-server.mjs",
+    "test": "node --test",
     "db:check": "node scripts/db-check.mjs",
     "db:run": "node scripts/run-sql.mjs",
-    "db:migrate": "node scripts/run-sql.mjs db/migrate-v3.sql",
-    "db:seed": "node scripts/run-sql.mjs db/seed-aset-2025.sql",
-    "db:setup": "node scripts/run-sql.mjs db/migrate-v3.sql && node scripts/run-sql.mjs db/seed-aset-2025.sql"
+    "db:migrate": "node scripts/run-sql.mjs db/migrate-v3.sql"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.3.0",
+    "sharp": "^0.35.3",
+    "xlsx": "^0.18.5"
   }
 }

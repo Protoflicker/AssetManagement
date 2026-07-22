@@ -28,19 +28,18 @@ npm run db:check
 ```
 Kalau berhasil akan tampil jumlah baris `users`, `assets`, dll.
 
-## 4. Migrasi + masukkan data aset (sekali saja)
+## 4. Migrasi (sekali saja)
 ```
-npm run db:setup
-```
-Sama dengan menjalankan `db/migrate-v3.sql` lalu `db/seed-aset-2025.sql`
-(697 aset BMN 2025 + 5 kategori, lalu menandai QR semua aset). Idempotent — aman diulang.
-
-Atau terpisah:
-```
-npm run db:migrate      # db/migrate-v3.sql
-npm run db:seed         # db/seed-aset-2025.sql
+npm run db:migrate      # db/migrate-v3.sql (idempotent, aman diulang)
 npm run db:run <file>   # menjalankan file .sql apa pun
 ```
+Data aset 2026 dimuat lewat `db/migrate-v6-aset-2026.sql` (PERHATIAN: destruktif,
+mengosongkan aset dan riwayat lama):
+```
+npm run db:run db/migrate-v6-aset-2026.sql
+```
+Kolom-kolom yang lebih baru ditambahkan otomatis oleh `ensureSchema` (api/_schema.js)
+pada request pertama, jadi tidak semua perubahan skema butuh migrasi manual.
 
 ## 5. Jalankan aplikasinya
 ```

@@ -5,7 +5,7 @@ Ringkasan implementasi 6 fitur baru beserta langkah pengaktifan.
 ## ⚠️ Langkah wajib setelah deploy
 
 1. **Jalankan migrasi database** di Neon SQL Editor (atau `psql $DATABASE_URL -f db/migrate-v3.sql`),
-   atau lebih praktis dari lokal: `npm run db:setup` (lihat `docs/LOCAL-DEV.md`):
+   atau lebih praktis dari lokal: `npm run db:migrate` (lihat `docs/LOCAL-DEV.md`):
    ```
    db/migrate-v3.sql
    ```
@@ -65,7 +65,7 @@ Ringkasan implementasi 6 fitur baru beserta langkah pengaktifan.
 - API: `api/public.js` (katalog + detail); laporan di `api/dashboard.js?view=reports`; import di `api/assets.js` (POST `{rows}`) — digabung agar ≤12 fungsi (limit Vercel Hobby)
 - Halaman: `katalog.html`, `aset-detail.html`, `verifikasi.html`, `laporan.html`, `qr-print.html`
 - Skrip: `assets/guest.js`, `assets/reports.js`, `assets/import.js`, `assets/qr.js`
-- Migrasi/seed: `db/migrate-v3.sql`, `db/seed-aset-2025.sql`
+- Migrasi: `db/migrate-v3.sql`; data aset dimuat `db/migrate-v6-aset-2026.sql`
 
 ## Catatan
 - Import Excel & render QR memuat pustaka (SheetJS / qrcode-generator) dari CDN saat dibutuhkan —

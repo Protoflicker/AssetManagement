@@ -62,8 +62,7 @@ api/                serverless functions
   _auth.js _db.js _wa.js   (shared helpers, not routed)
 db/                 SQL: schema, migrations, seed data
   neon-schema.sql     full schema + seed (fresh install)
-  migrate*.sql        incremental, non-destructive migrations (existing DB)
-  seed-aset-2025.sql  asset data seed
+  migrate*.sql        incremental migrations (v5/v6 are destructive data loads)
 docs/               guides (setup, local dev, features, etc.)
 dev-server.mjs      local dev server (serves public/ + runs api/ against Neon)
 scripts/            db:check / db:run helpers (see docs/LOCAL-DEV.md)
