@@ -41,6 +41,13 @@ export async function ensureSchema(sql) {
       image      text,
       updated_at timestamptz default now()
     )`;
+    // failed-login ledger for per-NIP rate limiting (see api/login.js); rows expire after a day
+    await sql`create table if not exists login_attempts (
+      id         bigserial primary key,
+      nip        text not null,
+      created_at timestamptz not null default now()
+    )`;
+    await sql`create index if not exists idx_login_attempts_nip on login_attempts (nip, created_at)`;
     await reconcileStock(sql);
     _ensured = true;
   } catch (e) {
