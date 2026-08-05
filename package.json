@@ -4,7 +4,12 @@
   "private": true,
   "type": "module",
   "description": "SESDIAN asset management — static frontend + Neon-backed serverless API",
+  "main": "app.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
+    "start": "node server.mjs",
     "dev": "node dev-server.mjs",
     "test": "node --test",
     "db:check": "node scripts/db-check.mjs",

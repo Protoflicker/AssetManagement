@@ -1,8 +1,10 @@
 # Menjalankan SESDIAN di Lokal (terhubung ke Neon)
 
-Project ini = frontend statis (`public/`) + fungsi serverless (`api/`) yang membaca
+Project ini = frontend statis (`public/`) + handler API (`api/`) yang membaca
 `DATABASE_URL` dari environment. Di lokal kita pakai **dev-server.mjs** yang menjalankan
-keduanya tanpa perlu Vercel CLI.
+keduanya tanpa perlu Vercel CLI. Server yang dipakai sama persis dengan produksi
+(`server.mjs`), hanya dijalankan dalam mode dev supaya aset tidak di-cache.
+Untuk deploy ke Hostinger, lihat `docs/HOSTINGER-DEPLOY.md`.
 
 ## 1. Buat file `.env.local`
 Salin template lalu isi nilainya:
